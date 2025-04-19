@@ -1,11 +1,6 @@
-// filepath: /Users/mattzacharski/Desktop/my-electron-app/main.js
-const { app, Tray, Menu, nativeImage, BrowserWindow } = require("electron");
+// main.js
+const { app, Tray, Menu, nativeImage } = require("electron");
 const path = require("path");
-
-// Enable HMR
-require("electron-reload")(__dirname, {
-  electron: require(`${__dirname}/node_modules/electron`)
-});
 
 let tray = null;
 let window = null;
@@ -21,10 +16,33 @@ app.whenReady().then(() => {
   ]);
 
   tray.setContextMenu(contextMenu);
-  tray.setToolTip("This is my application");
 
-  createWindow();
+  tray.setToolTip("This is my application");
+  //   tray.setTitle("This is my title");
 });
+
+// app.whenReady().then(() => {
+//   try {
+//     const trayIconPath = ;
+//     console.log("Resolved tray icon path:", trayIconPath);
+//     tray = new Tray(trayIconPath);G
+//     console.log("Tray initialized successfully");
+//   } catch (error) {
+//     console.error("Failed to initialize tray icon:", error);
+//   }
+
+//   const contextMenu = Menu.buildFromTemplate([
+//     { label: "Show App", click: toggleWindow },
+//     { label: "Quit", click: () => app.quit() }
+//   ]);
+
+//   tray.setToolTip("SnapFold");
+//   tray.setContextMenu(contextMenu);
+
+//   tray.on("click", toggleWindow);
+
+//   createWindow();
+// });
 
 function createWindow() {
   window = new BrowserWindow({

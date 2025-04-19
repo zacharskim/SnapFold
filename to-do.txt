@@ -1,0 +1,23 @@
+
+
+
+man,,, bigger project than i thought...
+
+that's ok...can get it done nbd!!
+
+ui stuff
+figure out icon stuff
+menu item bar stuff
+record widget bar (like the screenshot one...)
+selection function
+way to export data...
+skip visualization for now,,, just mvp man...
+
+
+cnn stuff
+toy example
+figure out how to capture data best
+capture data
+label data
+train and test
+insert model into app...

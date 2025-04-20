@@ -6,10 +6,10 @@ let tray: Tray | null = null;
 let window: BrowserWindow | null = null;
 
 app.whenReady().then(() => {
-  const icon = nativeImage.createFromPath(path.join(__dirname, "tray-icon.png"));
+  const icon = nativeImage.createFromPath(path.join(__dirname, "../tray-icon.png"));
   tray = new Tray(icon);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Item1", type: "radio" },
+    { label: "Item1 howdy", type: "radio" },
     { label: "Item2", type: "radio" },
     { label: "Item3", type: "radio", checked: true },
     { label: "Item4", type: "radio" }

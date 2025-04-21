@@ -104,7 +104,9 @@ function createControlBar() {
     height: 50,
     frame: false,
     alwaysOnTop: true,
+    focusable: true,
     resizable: false,
+    show: false,
     transparent: true,
     skipTaskbar: true,
     webPreferences: {
@@ -114,6 +116,12 @@ function createControlBar() {
   });
 
   controlBar.loadFile("src/control-bar.html");
+  controlBar.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  controlBar?.showInactive();
+  controlBar?.showInactive(); // show first so OS accepts it
+  controlBar?.setFocusable(false); // now it's unfocusable
+  controlBar?.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  controlBar?.setAlwaysOnTop(true, "screen-saver");
 
   controlBar.on("closed", () => {
     controlBar = null;

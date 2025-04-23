@@ -1,2 +1,4 @@
+record widget bar (like the screenshot one...)
 
-menu item bar stuff
+
+^^styling...

@@ -1,7 +1,16 @@
-<body style="margin: 0; background: rgba(40, 40, 40, 0.9); color: white; font-family: sans-serif">
-  <div style="padding: 10px; display: flex; gap: 10px; -webkit-app-region: drag">
-    <div style="flex: 1">SnapFold Control Bar</div>
-    <button style="-webkit-app-region: no-drag">Start</button>
-    <button style="-webkit-app-region: no-drag">Stop</button>
-  </div>
-</body>
+<head>
+  <link rel="stylesheet" href="control-bar.css" />
+</head>
+<div class="control-bar drag-region">
+  <button class="icon-button" id="close-btn">
+    <img src="icons/xmark.svg" alt="Close" />
+  </button>
+  <button class="icon-button">
+    <img src="icons/display.svg" alt="Entire Screen" />
+  </button>
+  <button class="icon-button">
+    <img src="icons/dashedRectangle.svg" alt="Frame Select" />
+  </button>
+  <div class="export no drag">Export To…</div>
+  <div class="record no drag">Record</div>
+</div>

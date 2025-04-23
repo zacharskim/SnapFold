@@ -100,8 +100,8 @@ app.whenReady().then(() => {
 
 function createControlBar() {
   controlBar = new BrowserWindow({
-    width: 400,
-    height: 50,
+    width: 450,
+    height: 220,
     frame: false,
     alwaysOnTop: true,
     focusable: true,
@@ -131,3 +131,10 @@ function createControlBar() {
 app.on("window-all-closed", () => {
   // do nothing, we want tray to keep app alive
 });
+
+//control bar should have
+//x button (icon)
+//entire screen (icon)
+//frame  (icon)
+//export to....
+//record (clickable text / button, but no button styling)

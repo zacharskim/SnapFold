@@ -100,7 +100,7 @@ app.whenReady().then(() => {
 
 function createControlBar() {
   controlBar = new BrowserWindow({
-    width: 450,
+    width: 650,
     height: 220,
     frame: false,
     alwaysOnTop: true,

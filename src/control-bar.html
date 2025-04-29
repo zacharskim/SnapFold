@@ -2,15 +2,26 @@
   <link rel="stylesheet" href="control-bar.css" />
 </head>
 <div class="control-bar drag-region">
-  <button class="icon-button" id="close-btn">
+  <button class="close-button" id="close-btn">
     <img src="icons/xmark.svg" alt="Close" />
   </button>
+  <div class="border-l border-gray-500 h-6"></div>
   <button class="icon-button">
     <img src="icons/display.svg" alt="Entire Screen" />
   </button>
+  <div class="border-l border-gray-500 h-6"></div>
   <button class="icon-button">
     <img src="icons/dashedRectangle.svg" alt="Frame Select" />
   </button>
-  <div class="export no drag">Export To…</div>
-  <div class="record no drag">Record</div>
+
+  <div class="border-l border-gray-500 h-6"></div>
+  <div class="export-container">
+    <div class="border-l border-gray-500 h-6"></div>
+    <div>
+      <button class="control-bar-btn">Export To...</button>
+    </div>
+  </div>
+
+  <div class="border-l border-gray-500 h-6"></div>
+  <div><button class="control-bar-btn">Record</button></div>
 </div>

@@ -27,9 +27,27 @@
   -webkit-app-region: no-drag;
 }
 
-.icon-button img {
+.close-button img {
   width: 16px;
   height: 16px;
+  opacity: 0.8;
+}
+
+.close-button:hover img {
+  opacity: 1;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.icon-button img {
+  width: 24px;
+  height: 24px;
   opacity: 0.8;
 }
 
@@ -41,17 +59,42 @@
   margin-left: auto;
   padding: 4px 8px;
   -webkit-app-region: no-drag;
-  cursor: pointer;
 }
 
 .record {
   font-weight: bold;
+  align-items: center;
   color: white;
-  cursor: pointer;
   margin-left: 12px;
   -webkit-app-region: no-drag;
 }
 
-.record:hover {
-  text-decoration: underline;
+.control-bar-btn {
+  background: none;
+  border: none;
+  color: white;
+  padding: 4px;
+  cursor: pointer;
+  opacity: 0.8;
+  -webkit-app-region: no-drag;
+}
+
+.control-bar-btn:hover {
+  opacity: 1;
+}
+
+.border-l {
+  border-left: 1px solid #6b7280;
+}
+
+.h-6 {
+  height: 1.5rem;
+}
+
+.export-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-left: auto;
 }

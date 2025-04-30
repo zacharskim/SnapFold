@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overlay</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .dotted-rectangle {
+        border: 2px dashed white;
+        width: 300px;
+        height: 200px;
+        position: absolute;
+        cursor: move;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dotted-rectangle" id="dotted-rectangle"></div>
+    <script>
+      const rectangle = document.getElementById("dotted-rectangle");
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      rectangle.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        offsetX = e.clientX - rectangle.offsetLeft;
+        offsetY = e.clientY - rectangle.offsetTop;
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+          rectangle.style.left = `${e.clientX - offsetX}px`;
+          rectangle.style.top = `${e.clientY - offsetY}px`;
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+    </script>
+  </body>
+</html>

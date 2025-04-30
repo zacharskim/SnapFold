@@ -3,6 +3,7 @@ import * as path from "path";
 
 let tray: Tray | null = null;
 let controlBar: BrowserWindow | null = null;
+let overlay: BrowserWindow | null = null;
 
 app.whenReady().then(() => {
   const icon = nativeImage.createFromPath(path.join(__dirname, "../tray-icon.png"));

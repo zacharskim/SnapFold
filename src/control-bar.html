@@ -25,3 +25,23 @@
   <div class="border-l border-gray-500 h-6"></div>
   <div><button class="control-bar-btn">Record</button></div>
 </div>
+
+<script>
+  // Add an event listener to the close button to emit the close-control-bar event
+  const closeButton = document.getElementById("close-btn");
+  if (closeButton) {
+    closeButton.addEventListener("click", () => {
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.send("close-control-bar");
+    });
+  }
+
+  // Add an event listener to the Export To button to emit the export-to event
+  const exportButton = document.querySelector(".control-bar-btn");
+  if (exportButton) {
+    exportButton.addEventListener("click", () => {
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.send("export-to");
+    });
+  }
+</script>

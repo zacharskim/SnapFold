@@ -4,3 +4,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+# use YOLOv8 ??
+# or train from scratch ??

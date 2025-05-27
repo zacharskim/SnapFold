@@ -1,4 +1,4 @@
-import { app, Tray, Menu, BrowserWindow, nativeImage, ipcRenderer, ipcMain } from "electron";
+import { app, Tray, Menu, BrowserWindow, nativeImage, ipcRenderer, ipcMain, screen } from "electron";
 import * as path from "path";
 
 let tray: Tray | null = null;
@@ -28,6 +28,8 @@ app.whenReady().then(() => {
 });
 
 function createControlBar() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize; // Get screen dimensions
+
   controlBar = new BrowserWindow({
     width: 650,
     height: 220,
@@ -44,6 +46,7 @@ function createControlBar() {
     }
   });
 
+  controlBar.webContents.openDevTools();
   controlBar.loadFile("src/control-bar.html");
   controlBar.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   controlBar?.showInactive();
@@ -51,6 +54,7 @@ function createControlBar() {
   controlBar?.setFocusable(false); // now it's unfocusable
   controlBar?.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   controlBar?.setAlwaysOnTop(true, "screen-saver");
+  console.log(width, height, "ah");
 
   controlBar.on("closed", () => {
     controlBar = null;

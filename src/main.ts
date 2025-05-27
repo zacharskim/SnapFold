@@ -96,6 +96,33 @@ function createControlBar() {
   });
 }
 
+ipcMain.on("show-overlay", () => {
+  if (!overlay) {
+    const { width, height } = screen.getPrimaryDisplay().bounds; // Get full screen dimensions
+    console.log(width, height, "oh");
+
+    overlay = new BrowserWindow({
+      width: width,
+      height: height,
+      frame: false,
+      transparent: true,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false
+      }
+    });
+
+    overlay.loadFile("src/overlay.html"); // Load the overlay HTML file
+    overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+    overlay.on("closed", () => {
+      overlay = null;
+    });
+  }
+});
+
 app.on("window-all-closed", () => {
   // do nothing, we want tray to keep app alive
 });

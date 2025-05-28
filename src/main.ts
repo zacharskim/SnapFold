@@ -32,7 +32,7 @@ function createControlBar() {
 
   controlBar = new BrowserWindow({
     width: 650,
-    height: 220,
+    height: 44,
     frame: false,
     alwaysOnTop: true,
     focusable: true,
@@ -62,7 +62,15 @@ function createControlBar() {
 
   // Listen for the close button event
   ipcMain.on("close-control-bar", () => {
-    controlBar?.close();
+    if (controlBar) {
+      controlBar.close();
+      controlBar = null;
+    }
+
+    if (overlay) {
+      overlay.close();
+      overlay = null;
+    }
   });
 
   // Listen for the export-to event and handle file export
@@ -113,6 +121,8 @@ ipcMain.on("show-overlay", () => {
         contextIsolation: false
       }
     });
+
+    overlay.webContents.openDevTools({ mode: "detach" });
 
     overlay.loadFile("src/overlay.html"); // Load the overlay HTML file
     overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });

@@ -5,15 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Overlay</title>
     <style>
+      html,
       body {
         margin: 0;
         padding: 0;
-        background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        width: 100vw;
         height: 100vh;
+        background: transparent;
         overflow: hidden;
+      }
+
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 50;
+      }
+
+      .mask {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.5);
+        pointer-events: none;
       }
 
       .dotted-rectangle {
@@ -22,15 +37,65 @@
         height: 200px;
         position: absolute;
         cursor: move;
+        z-index: 100;
+        pointer-events: auto;
+        -webkit-user-select: none;
+        outline: none !important;
+        box-shadow: none !important;
+        transform: translateZ(0);
+      }
+
+      .dotted-rectangle:focus {
+        outline: none !important;
+        box-shadow: none !important;
       }
     </style>
   </head>
   <body>
+    <div class="overlay">
+      <div id="mask-top" class="mask"></div>
+      <div id="mask-left" class="mask"></div>
+      <div id="mask-right" class="mask"></div>
+      <div id="mask-bottom" class="mask"></div>
+    </div>
+
     <div class="dotted-rectangle" id="dotted-rectangle"></div>
+
     <script>
       const rectangle = document.getElementById("dotted-rectangle");
+      const maskTop = document.getElementById("mask-top");
+      const maskLeft = document.getElementById("mask-left");
+      const maskRight = document.getElementById("mask-right");
+      const maskBottom = document.getElementById("mask-bottom");
+
       let isDragging = false;
       let offsetX, offsetY;
+
+      const updateMasks = () => {
+        const rect = rectangle.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        maskTop.style.top = "0px";
+        maskTop.style.left = "0px";
+        maskTop.style.width = "100vw";
+        maskTop.style.height = rect.top + "px";
+
+        maskLeft.style.top = rect.top + "px";
+        maskLeft.style.left = "0px";
+        maskLeft.style.width = rect.left + "px";
+        maskLeft.style.height = rect.height + "px";
+
+        maskRight.style.top = rect.top + "px";
+        maskRight.style.left = rect.right + "px";
+        maskRight.style.width = vw - rect.right + "px";
+        maskRight.style.height = rect.height + "px";
+
+        maskBottom.style.top = rect.bottom + "px";
+        maskBottom.style.left = "0px";
+        maskBottom.style.width = "100vw";
+        maskBottom.style.height = vh - rect.bottom + "px";
+      };
 
       rectangle.addEventListener("mousedown", (e) => {
         isDragging = true;
@@ -42,12 +107,18 @@
         if (isDragging) {
           rectangle.style.left = `${e.clientX - offsetX}px`;
           rectangle.style.top = `${e.clientY - offsetY}px`;
+          updateMasks();
         }
       });
 
       document.addEventListener("mouseup", () => {
         isDragging = false;
       });
+
+      // Initial placement
+      rectangle.style.left = "100px";
+      rectangle.style.top = "100px";
+      updateMasks();
     </script>
   </body>
 </html>

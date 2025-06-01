@@ -22,13 +22,6 @@
         width: 100vw;
         height: 100vh;
         pointer-events: none;
-        z-index: 50;
-      }
-
-      .mask {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.5);
-        pointer-events: none;
       }
 
       .dotted-rectangle {
@@ -42,83 +35,122 @@
         -webkit-user-select: none;
         outline: none !important;
         box-shadow: none !important;
-        transform: translateZ(0);
+        transform: translate(calc(50vw - 150px), calc(25vh - 100px));
+        background-color: rgba(255, 255, 255, 0.4); /* Lighter and more transparent */
       }
 
-      .dotted-rectangle:focus {
-        outline: none !important;
-        box-shadow: none !important;
+      .resize-handle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: white;
+        cursor: pointer;
+        z-index: 101;
+      }
+
+      .resize-handle.top-left {
+        top: -5px;
+        left: -5px;
+        cursor: nwse-resize;
+      }
+
+      .resize-handle.top-right {
+        top: -5px;
+        right: -5px;
+        cursor: nesw-resize;
+      }
+
+      .resize-handle.bottom-left {
+        bottom: -5px;
+        left: -5px;
+        cursor: nesw-resize;
+      }
+
+      .resize-handle.bottom-right {
+        bottom: -5px;
+        right: -5px;
+        cursor: nwse-resize;
       }
     </style>
   </head>
   <body>
-    <div class="overlay">
-      <div id="mask-top" class="mask"></div>
-      <div id="mask-left" class="mask"></div>
-      <div id="mask-right" class="mask"></div>
-      <div id="mask-bottom" class="mask"></div>
+    <div class="overlay"></div>
+
+    <div class="dotted-rectangle" id="dotted-rectangle">
+      <div class="resize-handle top-left" id="resize-top-left"></div>
+      <div class="resize-handle top-right" id="resize-top-right"></div>
+      <div class="resize-handle bottom-left" id="resize-bottom-left"></div>
+      <div class="resize-handle bottom-right" id="resize-bottom-right"></div>
     </div>
 
-    <div class="dotted-rectangle" id="dotted-rectangle"></div>
-
     <script>
+      const { ipcRenderer } = require("electron");
       const rectangle = document.getElementById("dotted-rectangle");
-      const maskTop = document.getElementById("mask-top");
-      const maskLeft = document.getElementById("mask-left");
-      const maskRight = document.getElementById("mask-right");
-      const maskBottom = document.getElementById("mask-bottom");
+      const overlayEl = document.querySelector(".overlay");
+      const resizeHandles = document.querySelectorAll(".resize-handle");
 
       let isDragging = false;
-      let offsetX, offsetY;
-
-      const updateMasks = () => {
-        const rect = rectangle.getBoundingClientRect();
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-
-        maskTop.style.top = "0px";
-        maskTop.style.left = "0px";
-        maskTop.style.width = "100vw";
-        maskTop.style.height = rect.top + "px";
-
-        maskLeft.style.top = rect.top + "px";
-        maskLeft.style.left = "0px";
-        maskLeft.style.width = rect.left + "px";
-        maskLeft.style.height = rect.height + "px";
-
-        maskRight.style.top = rect.top + "px";
-        maskRight.style.left = rect.right + "px";
-        maskRight.style.width = vw - rect.right + "px";
-        maskRight.style.height = rect.height + "px";
-
-        maskBottom.style.top = rect.bottom + "px";
-        maskBottom.style.left = "0px";
-        maskBottom.style.width = "100vw";
-        maskBottom.style.height = vh - rect.bottom + "px";
-      };
+      let isResizing = false;
+      let currentHandle = null;
+      let offsetX, offsetY, startX, startY, startWidth, startHeight, startLeft, startTop;
 
       rectangle.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        offsetX = e.clientX - rectangle.offsetLeft;
-        offsetY = e.clientY - rectangle.offsetTop;
+        if (e.target.classList.contains("resize-handle")) {
+          isResizing = true;
+          currentHandle = e.target;
+          startX = e.clientX;
+          startY = e.clientY;
+          startWidth = rectangle.offsetWidth;
+          startHeight = rectangle.offsetHeight;
+          startLeft = rectangle.offsetLeft;
+          startTop = rectangle.offsetTop;
+          e.preventDefault();
+        } else {
+          isDragging = true;
+          offsetX = e.clientX - rectangle.offsetLeft;
+          offsetY = e.clientY - rectangle.offsetTop;
+        }
       });
 
       document.addEventListener("mousemove", (e) => {
         if (isDragging) {
           rectangle.style.left = `${e.clientX - offsetX}px`;
           rectangle.style.top = `${e.clientY - offsetY}px`;
-          updateMasks();
+        } else if (isResizing) {
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          if (currentHandle.id === "resize-top-left") {
+            rectangle.style.width = `${Math.max(20, startWidth - dx)}px`;
+            rectangle.style.height = `${Math.max(20, startHeight - dy)}px`;
+            rectangle.style.left = `${startLeft + dx}px`;
+            rectangle.style.top = `${startTop + dy}px`;
+          } else if (currentHandle.id === "resize-top-right") {
+            rectangle.style.width = `${Math.max(20, startWidth + dx)}px`;
+            rectangle.style.height = `${Math.max(20, startHeight - dy)}px`;
+            rectangle.style.top = `${startTop + dy}px`;
+          } else if (currentHandle.id === "resize-bottom-left") {
+            rectangle.style.width = `${Math.max(20, startWidth - dx)}px`;
+            rectangle.style.height = `${Math.max(20, startHeight + dy)}px`;
+            rectangle.style.left = `${startLeft + dx}px`;
+          } else if (currentHandle.id === "resize-bottom-right") {
+            rectangle.style.width = `${Math.max(20, startWidth + dx)}px`;
+            rectangle.style.height = `${Math.max(20, startHeight + dy)}px`;
+          }
         }
       });
 
       document.addEventListener("mouseup", () => {
         isDragging = false;
+        isResizing = false;
+        currentHandle = null;
       });
 
-      // Initial placement
-      rectangle.style.left = "100px";
-      rectangle.style.top = "100px";
-      updateMasks();
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          ipcRenderer.send("close-overlay");
+        }
+      });
     </script>
   </body>
 </html>

@@ -73,6 +73,13 @@ function createControlBar() {
     }
   });
 
+  ipcMain.on("close-overlay", () => {
+    if (overlay) {
+      overlay.close();
+      overlay = null;
+    }
+  });
+
   // Listen for the export-to event and handle file export
   ipcMain.on("export-to", async () => {
     const { dialog } = require("electron");

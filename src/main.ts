@@ -32,7 +32,7 @@ function createControlBar() {
 
   controlBar = new BrowserWindow({
     width: 650,
-    height: 44,
+    height: 75,
     frame: false,
     alwaysOnTop: true,
     focusable: true,
@@ -111,7 +111,7 @@ function createControlBar() {
   });
 }
 
-ipcMain.on("show-overlay", () => {
+ipcMain.on("toggle-selection", (event, selection) => {
   if (!overlay) {
     const { width, height } = screen.getPrimaryDisplay().bounds; // Get full screen dimensions
     console.log(width, height, "oh");
@@ -129,10 +129,14 @@ ipcMain.on("show-overlay", () => {
       }
     });
 
-    overlay.webContents.openDevTools({ mode: "detach" });
+    overlay.webContents.openDevTools();
+    overlay.loadFile("src/overlay.html").then(() => {
+      overlay?.webContents.send("set-mode", selection);
+    });
 
-    overlay.loadFile("src/overlay.html"); // Load the overlay HTML file
     overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    //this should be only when the thing is recording...
+    // overlay.setIgnoreMouseEvents(true, { forward: true });
 
     overlay.on("closed", () => {
       overlay = null;

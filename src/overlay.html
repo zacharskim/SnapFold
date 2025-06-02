@@ -94,6 +94,25 @@
       let currentHandle = null;
       let offsetX, offsetY, startX, startY, startWidth, startHeight, startLeft, startTop;
 
+      ipcRenderer.on("set-mode", (event, mode) => {
+        console.log("Overlay mode:", mode);
+
+        if (mode === "show-overlay") {
+          // show selection UI
+          document.body.classList.remove("recording");
+          document.body.classList.add("selection");
+        } else if (mode === "full-screen") {
+          // show recording UI
+          document.body.classList.remove("selection");
+          document.body.classList.add("recording");
+
+          // example: enable click-through
+          remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true });
+        } else {
+          console.log("Unknown mode:", mode);
+        }
+      });
+
       rectangle.addEventListener("mousedown", (e) => {
         if (e.target.classList.contains("resize-handle")) {
           isResizing = true;
@@ -154,3 +173,6 @@
     </script>
   </body>
 </html>
+<!-- 
+next, add full Screen add ability to switch between full screen and the other thing add the record bit to actually
+collect the data ?! -->

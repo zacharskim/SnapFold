@@ -4,6 +4,7 @@ import * as path from "path";
 let tray: Tray | null = null;
 let controlBar: BrowserWindow | null = null;
 let overlay: BrowserWindow | null = null;
+let frameSelected = false;
 
 app.whenReady().then(() => {
   const icon = nativeImage.createFromPath(path.join(__dirname, "../tray-icon.png"));
@@ -46,7 +47,7 @@ function createControlBar() {
     }
   });
 
-  controlBar.webContents.openDevTools();
+  // controlBar.webContents.openDevTools();
   controlBar.loadFile("src/control-bar.html");
   controlBar.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   controlBar?.showInactive();
@@ -112,6 +113,8 @@ function createControlBar() {
 }
 
 ipcMain.on("toggle-selection", (event, selection) => {
+  frameSelected = selection === "show-overlay" || selection === "full-screen";
+
   if (!overlay) {
     const { width, height } = screen.getPrimaryDisplay().bounds; // Get full screen dimensions
     console.log(width, height, "oh");
@@ -129,19 +132,34 @@ ipcMain.on("toggle-selection", (event, selection) => {
       }
     });
 
-    overlay.webContents.openDevTools();
+    // overlay.webContents.openDevTools();
     overlay.loadFile("src/overlay.html").then(() => {
       overlay?.webContents.send("set-mode", selection);
     });
 
     overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     //this should be only when the thing is recording...
-    // overlay.setIgnoreMouseEvents(true, { forward: true });
+    if (selection === "full-screen") {
+      overlay.setIgnoreMouseEvents(true, { forward: true });
+    }
 
     overlay.on("closed", () => {
       overlay = null;
+      frameSelected = false; // Reset frameSelected when overlay is closed
     });
   }
+});
+
+ipcMain.on("close-overlay", () => {
+  if (overlay) {
+    overlay.close();
+    overlay = null;
+  }
+  frameSelected = false; // Reset frameSelected when overlay is closed
+});
+
+ipcMain.handle("get-frame-selected", async () => {
+  return frameSelected; // Return the current state of frameSelected
 });
 
 app.on("window-all-closed", () => {

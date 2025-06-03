@@ -38,6 +38,14 @@
         transform: translate(calc(50vw - 150px), calc(25vh - 100px));
         background-color: rgba(255, 255, 255, 0.4); /* Lighter and more transparent */
       }
+      .dotted-rectangle.full-screen {
+        left: 0px;
+        top: 0px;
+        width: 99vw;
+        height: 99vh;
+        transform: none;
+        background-color: transparent;
+      }
 
       .resize-handle {
         position: absolute;
@@ -98,16 +106,10 @@
         console.log("Overlay mode:", mode);
 
         if (mode === "show-overlay") {
-          // show selection UI
-          document.body.classList.remove("recording");
-          document.body.classList.add("selection");
+          window.frameSelected = true;
         } else if (mode === "full-screen") {
-          // show recording UI
-          document.body.classList.remove("selection");
-          document.body.classList.add("recording");
-
-          // example: enable click-through
-          remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true });
+          rectangle.classList.add("full-screen");
+          window.frameSelected = true;
         } else {
           console.log("Unknown mode:", mode);
         }
@@ -168,6 +170,7 @@
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
           ipcRenderer.send("close-overlay");
+          window.frameSelected = false; // Reset frameSelected on Escape
         }
       });
     </script>

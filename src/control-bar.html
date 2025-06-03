@@ -67,15 +67,14 @@
     recordButton.addEventListener("click", () => {
       const { ipcRenderer } = require("electron");
 
-      // Check if frame is selected (you'll need to define this logic)
-      const frameSelected = window.frameSelected || false;
+      ipcRenderer.invoke("get-frame-selected").then((frameSelected) => {
+        if (!frameSelected) {
+          showTooltip(recordButton, "Please select a capture area first.");
+          return;
+        }
 
-      if (!frameSelected) {
-        showTooltip(recordButton, "Please select a capture area first.");
-        return;
-      }
-
-      ipcRenderer.send("start-recording");
+        ipcRenderer.send("start-recording");
+      });
     });
   }
 
@@ -101,4 +100,8 @@
       }, 200);
     }, 2500);
   }
+
+  ipcRenderer.on("state-update", (event, state) => {
+    window.frameSelected = state.frameSelected;
+  });
 </script>

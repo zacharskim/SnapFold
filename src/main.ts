@@ -1,32 +1,31 @@
 import { app, Tray, Menu, BrowserWindow, nativeImage, ipcRenderer, ipcMain, screen } from "electron";
 import * as path from "path";
 
+const { desktopCapturer } = require("electron");
+
 let tray: Tray | null = null;
 let controlBar: BrowserWindow | null = null;
 let overlay: BrowserWindow | null = null;
 let frameSelected = false;
 
-app.whenReady().then(() => {
-  const icon = nativeImage.createFromPath(path.join(__dirname, "../tray-icon.png"));
-  tray = new Tray(icon);
-
+const updateContextMenu = () => {
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "Open Capture Bar",
+      label: controlBar && controlBar.isVisible() ? "Hide Capture Bar" : "Open Capture Bar",
       click: () => {
         if (!controlBar) {
           createControlBar();
         } else {
           controlBar.isVisible() ? controlBar.hide() : controlBar.show();
         }
+        updateContextMenu(); // Update menu after action
       }
     },
     { label: "Quit", role: "quit" }
   ]);
 
-  tray.setContextMenu(contextMenu);
-  tray.setToolTip("SnapFold OCR");
-});
+  tray?.setContextMenu(contextMenu);
+};
 
 function createControlBar() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize; // Get screen dimensions
@@ -55,7 +54,7 @@ function createControlBar() {
   controlBar?.setFocusable(false); // now it's unfocusable
   controlBar?.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   controlBar?.setAlwaysOnTop(true, "screen-saver");
-  console.log(width, height, "ah");
+  // console.log(width, height, "ah");
 
   controlBar.on("closed", () => {
     controlBar = null;
@@ -112,12 +111,19 @@ function createControlBar() {
   });
 }
 
+app.whenReady().then(() => {
+  const icon = nativeImage.createFromPath(path.join(__dirname, "../tray-icon.png"));
+  tray = new Tray(icon);
+  updateContextMenu();
+  tray.setToolTip("SnapFold OCR");
+});
+
 ipcMain.on("toggle-selection", (event, selection) => {
   frameSelected = selection === "show-overlay" || selection === "full-screen";
 
   if (!overlay) {
     const { width, height } = screen.getPrimaryDisplay().bounds; // Get full screen dimensions
-    console.log(width, height, "oh");
+    // console.log(width, height, "oh");
 
     overlay = new BrowserWindow({
       width: width,
@@ -147,7 +153,30 @@ ipcMain.on("toggle-selection", (event, selection) => {
       overlay = null;
       frameSelected = false; // Reset frameSelected when overlay is closed
     });
+  } else {
+    // Update frameSelected
+    frameSelected = selection === "show-overlay" || selection === "full-screen";
+
+    // Send mode change to existing overlay
+
+    // Update mouse events if necessary
+    if (selection === "full-screen") {
+      //trigger a tooltip...
+      // overlay.setIgnoreMouseEvents(true, { forward: true });
+    } else {
+      overlay.webContents.send("set-mode", selection);
+      overlay.setIgnoreMouseEvents(false);
+    }
   }
+});
+
+ipcMain.on("start-recording", () => {
+  console.log("sheesh");
+  const { desktopCapturer } = require("electron");
+
+  desktopCapturer.getSources({ types: ["screen", "window"] }).then((sources: Electron.DesktopCapturerSource[]) => {
+    console.log("Sources:", sources);
+  });
 });
 
 ipcMain.on("close-overlay", () => {

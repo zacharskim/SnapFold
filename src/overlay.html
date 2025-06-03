@@ -39,6 +39,7 @@
         background-color: rgba(255, 255, 255, 0.4); /* Lighter and more transparent */
       }
       .dotted-rectangle.full-screen {
+        position: fixed;
         left: 0px;
         top: 0px;
         width: 99vw;
@@ -82,7 +83,7 @@
     </style>
   </head>
   <body>
-    <div class="overlay"></div>
+    <!-- <div class="overlay"></div> -->
 
     <div class="dotted-rectangle" id="dotted-rectangle">
       <div class="resize-handle top-left" id="resize-top-left"></div>
@@ -107,8 +108,11 @@
 
         if (mode === "show-overlay") {
           window.frameSelected = true;
+          rectangle.classList.remove("full-screen");
         } else if (mode === "full-screen") {
+          //rectangle.style.transform = "translate(0px, 0px)";
           rectangle.classList.add("full-screen");
+          rectangle.style.transform = "";
           window.frameSelected = true;
         } else {
           console.log("Unknown mode:", mode);
@@ -176,6 +180,6 @@
     </script>
   </body>
 </html>
-<!-- 
-next, add full Screen add ability to switch between full screen and the other thing add the record bit to actually
-collect the data ?! -->
+
+<!-- next, add way to actually collect data in each mode?? some sort of recording animation or signal? some sort of timer to
+show how long recording has been going on for?? some sort of way to hide the control bar...shortcuts?? idk... -->

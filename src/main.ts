@@ -6,7 +6,7 @@ const { desktopCapturer } = require("electron");
 let tray: Tray | null = null;
 let controlBar: BrowserWindow | null = null;
 let overlay: BrowserWindow | null = null;
-let frameSelected = false;
+let windowSelected = false;
 
 const updateContextMenu = () => {
   const contextMenu = Menu.buildFromTemplate([
@@ -138,7 +138,7 @@ app.whenReady().then(() => {
 });
 
 ipcMain.on("toggle-selection", (event, selection) => {
-  frameSelected = selection === "show-overlay" || selection === "full-screen";
+  windowSelected = selection === "show-overlay" || selection === "full-screen";
 
   if (!overlay) {
     const { width, height } = screen.getPrimaryDisplay().bounds; // Get full screen dimensions
@@ -157,7 +157,7 @@ ipcMain.on("toggle-selection", (event, selection) => {
       }
     });
 
-    overlay.webContents.openDevTools();
+    // overlay.webContents.openDevTools();
     overlay.loadFile("src/overlay.html").then(() => {
       overlay?.webContents.send("set-mode", selection);
     });
@@ -170,11 +170,11 @@ ipcMain.on("toggle-selection", (event, selection) => {
 
     overlay.on("closed", () => {
       overlay = null;
-      frameSelected = false; // Reset frameSelected when overlay is closed
+      windowSelected = false; // Reset windowSelected when overlay is closed
     });
   } else {
-    // Update frameSelected
-    frameSelected = selection === "show-overlay" || selection === "full-screen";
+    // Update windowSelected
+    windowSelected = selection === "show-overlay" || selection === "full-screen";
 
     // Send mode change to existing overlay
 
@@ -196,11 +196,11 @@ ipcMain.on("close-overlay", () => {
     overlay.close();
     overlay = null;
   }
-  frameSelected = false; // Reset frameSelected when overlay is closed
+  windowSelected = false; // Reset windowSelected when overlay is closed
 });
 
-ipcMain.handle("get-frame-selected", async () => {
-  return frameSelected; // Return the current state of frameSelected
+ipcMain.handle("get-window-selected", async () => {
+  return windowSelected; // Return the current state of windowSelected
 });
 
 app.on("window-all-closed", () => {

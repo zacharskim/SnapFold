@@ -6,13 +6,13 @@
     <img src="icons/xmark.svg" alt="Close" />
   </button>
   <div class="border-l border-gray-500 h-6"></div>
-  <button class="icon-button" id="full-select">
+  <button class="icon-button" id="select-window">
     <img src="icons/display.svg" alt="Entire Screen" />
   </button>
-  <!-- <div class="border-l border-gray-500 h-6"></div> -->
-  <!-- <button class="icon-button" id="frame-select">
+  <div class="border-l border-gray-500 h-6"></div>
+  <button class="icon-button" id="stop-btn">
     <img src="icons/dashedRectangle.svg" alt="Frame Select" />
-  </button> -->
+  </button>
 
   <div class="border-l border-gray-500 h-6"></div>
   <div class="export-container">
@@ -57,47 +57,78 @@
       ipcRenderer.send("toggle-selection", "show-overlay");
     });
   }
-
-  const fullSelectButton = document.getElementById("full-select");
-  if (fullSelectButton) {
-    fullSelectButton.addEventListener("click", () => {
-      const { ipcRenderer } = require("electron");
-      ipcRenderer.send("toggle-selection", "full-screen");
-      //well needs a major revamp based on new info that we can record 'through' an electron window despite being able to click through them
-    });
-  }
-
   const recordButton = document.getElementById("record-btn");
   const video = document.querySelector("video");
-  if (recordButton) {
-    recordButton.addEventListener("click", () => {
-      const { ipcRenderer } = require("electron");
+  const selectWindow = document.getElementById("select-window");
+  let windowSelectedStatus = false;
+  let selectedStream = null;
+  if (selectWindow) {
+    //const { ipcRenderer } = require("electron");
+    //ipcRenderer.send("toggle-selection", "full-screen");
+    //well needs a major revamp based on new info that we can record 'through' an electron window despite being able to click through them
 
-      ipcRenderer.invoke("get-frame-selected").then((frameSelected) => {
-        if (!frameSelected) {
-          showTooltip(recordButton, "Please select a capture area first.");
-          return;
-        }
+    //we don't actually want a new browser window,,, but just to trigger the permissions to ask what window etc...
 
-        navigator.mediaDevices
-          .getDisplayMedia({
-            audio: true,
-            video: {
-              width: 320,
-              height: 240,
-              frameRate: 30
-            }
-          })
-          .then((stream) => {
-            video.srcObject = stream;
-            video.onloadedmetadata = (e) => video.play();
-          })
-          .catch((e) => console.log(e));
-
-        //ipcRenderer.send("start-recording");
-      });
+    selectWindow.addEventListener("click", async () => {
+      try {
+        selectedStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        windowSelectedStatus = true;
+        console.log("Window selected!");
+      } catch (err) {
+        console.error("Error selecting window:", err);
+      }
     });
   }
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  if (recordButton) {
+    recordButton.addEventListener("click", () => {
+      if (!windowSelectedStatus || !selectedStream) {
+        showTooltip(recordButton, "Please select a capture area first.");
+        return;
+      }
+
+      recordedChunks = [];
+
+      mediaRecorder = new MediaRecorder(selectedStream, {
+        mimeType: "video/webm; codecs=vp9"
+      });
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "recording.webm";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }, 100);
+      };
+
+      mediaRecorder.start();
+      console.log("Recording started!");
+    });
+  }
+
+  const stopButton = document.getElementById("stop-btn");
+
+  stopButton.addEventListener("click", () => {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+      console.log("Recording stopped.");
+    } else {
+      console.log("No recording in progress.");
+    }
+  });
 
   function showTooltip(targetElement, message) {
     let tooltip = document.createElement("div");

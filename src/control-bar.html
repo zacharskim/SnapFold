@@ -9,10 +9,10 @@
   <button class="icon-button" id="full-select">
     <img src="icons/display.svg" alt="Entire Screen" />
   </button>
-  <div class="border-l border-gray-500 h-6"></div>
-  <button class="icon-button" id="frame-select">
+  <!-- <div class="border-l border-gray-500 h-6"></div> -->
+  <!-- <button class="icon-button" id="frame-select">
     <img src="icons/dashedRectangle.svg" alt="Frame Select" />
-  </button>
+  </button> -->
 
   <div class="border-l border-gray-500 h-6"></div>
   <div class="export-container">
@@ -24,6 +24,10 @@
 
   <div class="border-l border-gray-500 h-6"></div>
   <div><button class="control-bar-btn" id="record-btn">Record</button></div>
+
+  <!-- <div>
+    <video width="320" height="240" autoplay></video>
+  </div> -->
 </div>
 
 <script>
@@ -59,10 +63,12 @@
     fullSelectButton.addEventListener("click", () => {
       const { ipcRenderer } = require("electron");
       ipcRenderer.send("toggle-selection", "full-screen");
+      //well needs a major revamp based on new info that we can record 'through' an electron window despite being able to click through them
     });
   }
 
   const recordButton = document.getElementById("record-btn");
+  const video = document.querySelector("video");
   if (recordButton) {
     recordButton.addEventListener("click", () => {
       const { ipcRenderer } = require("electron");
@@ -73,7 +79,22 @@
           return;
         }
 
-        ipcRenderer.send("start-recording");
+        navigator.mediaDevices
+          .getDisplayMedia({
+            audio: true,
+            video: {
+              width: 320,
+              height: 240,
+              frameRate: 30
+            }
+          })
+          .then((stream) => {
+            video.srcObject = stream;
+            video.onloadedmetadata = (e) => video.play();
+          })
+          .catch((e) => console.log(e));
+
+        //ipcRenderer.send("start-recording");
       });
     });
   }

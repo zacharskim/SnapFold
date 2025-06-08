@@ -1,4 +1,4 @@
-import { app, Tray, Menu, BrowserWindow, nativeImage, ipcRenderer, ipcMain, screen } from "electron";
+import { app, Tray, Menu, BrowserWindow, nativeImage, ipcRenderer, ipcMain, screen, session } from "electron";
 import * as path from "path";
 
 const { desktopCapturer } = require("electron");
@@ -32,7 +32,7 @@ function createControlBar() {
 
   controlBar = new BrowserWindow({
     width: 650,
-    height: 75,
+    height: 75, //75
     frame: false,
     alwaysOnTop: true,
     focusable: true,
@@ -46,7 +46,7 @@ function createControlBar() {
     }
   });
 
-  // controlBar.webContents.openDevTools();
+  controlBar.webContents.openDevTools();
   controlBar.loadFile("src/control-bar.html");
   controlBar.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   controlBar?.showInactive();
@@ -118,8 +118,23 @@ app.whenReady().then(() => {
 
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
-  updateContextMenu();
   tray.setToolTip("SnapFold OCR");
+
+  session.defaultSession.setDisplayMediaRequestHandler(
+    (request, callback) => {
+      desktopCapturer.getSources({ types: ["screen"] }).then((sources: Electron.DesktopCapturerSource[]) => {
+        // Grant access to the first screen found.
+        callback({ video: sources[0], audio: "loopback" });
+      });
+      // If true, use the system picker if available.
+      // Note: this is currently experimental. If the system picker
+      // is available, it will be used and the media request handler
+      // will not be invoked.
+    },
+    { useSystemPicker: true }
+  );
+
+  updateContextMenu();
 });
 
 ipcMain.on("toggle-selection", (event, selection) => {
@@ -174,20 +189,7 @@ ipcMain.on("toggle-selection", (event, selection) => {
   }
 });
 
-ipcMain.on("start-recording", () => {
-  const { desktopCapturer, BrowserWindow } = require("electron");
-  desktopCapturer.getSources({ types: ["screen"] }).then((sources: Electron.DesktopCapturerSource[]) => {
-    const screenSource = sources.find((source) => source.name === "Entire screen") || sources[0];
-
-    // Find overlay window
-    const overlayWindow = BrowserWindow.getAllWindows().find((win: BrowserWindow) => win.getTitle() === "Overlay");
-    if (overlayWindow) {
-      overlayWindow.webContents.send("selected-source", screenSource.id);
-    } else {
-      console.log("Overlay window not found!");
-    }
-  });
-});
+ipcMain.on("start-recording", () => {});
 
 ipcMain.on("close-overlay", () => {
   if (overlay) {

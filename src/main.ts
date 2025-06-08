@@ -112,7 +112,11 @@ function createControlBar() {
 }
 
 app.whenReady().then(() => {
-  const icon = nativeImage.createFromPath(path.join(__dirname, "../tray-icon.png"));
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, "assets", "tray-icon.png") // Path for packaged app
+    : path.join(__dirname, "..", "assets", "tray-icon.png"); // Path for development mode
+
+  const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
   updateContextMenu();
   tray.setToolTip("SnapFold OCR");
@@ -138,7 +142,7 @@ ipcMain.on("toggle-selection", (event, selection) => {
       }
     });
 
-    // overlay.webContents.openDevTools();
+    overlay.webContents.openDevTools();
     overlay.loadFile("src/overlay.html").then(() => {
       overlay?.webContents.send("set-mode", selection);
     });
@@ -171,11 +175,17 @@ ipcMain.on("toggle-selection", (event, selection) => {
 });
 
 ipcMain.on("start-recording", () => {
-  console.log("sheesh");
-  const { desktopCapturer } = require("electron");
+  const { desktopCapturer, BrowserWindow } = require("electron");
+  desktopCapturer.getSources({ types: ["screen"] }).then((sources: Electron.DesktopCapturerSource[]) => {
+    const screenSource = sources.find((source) => source.name === "Entire screen") || sources[0];
 
-  desktopCapturer.getSources({ types: ["screen", "window"] }).then((sources: Electron.DesktopCapturerSource[]) => {
-    console.log("Sources:", sources);
+    // Find overlay window
+    const overlayWindow = BrowserWindow.getAllWindows().find((win: BrowserWindow) => win.getTitle() === "Overlay");
+    if (overlayWindow) {
+      overlayWindow.webContents.send("selected-source", screenSource.id);
+    } else {
+      console.log("Overlay window not found!");
+    }
   });
 });
 

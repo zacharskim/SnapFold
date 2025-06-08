@@ -3,7 +3,28 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/main.js",
+  "build": {
+    "appId": "com.yourapp.id",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "files": [
+      "dist/",
+      "assets/",
+      "main.js",
+      "main.ts",
+      "index.html",
+      "overlay.html",
+      "controlBar.html",
+      "overlay.js",
+      "controlBar.js",
+      "package.json"
+    ],
+    "extraResources": []
+  },
   "scripts": {
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
     "start": "tsc && electron ."
   },
   "author": "",
@@ -12,6 +33,7 @@
     "@types/electron": "^1.6.12",
     "@types/node": "^22.14.1",
     "electron": "^35.1.5",
+    "electron-builder": "^26.0.12",
     "typescript": "^5.8.3"
   }
 }

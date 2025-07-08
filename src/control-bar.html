@@ -10,11 +10,11 @@
     <img src="icons/display.svg" alt="Entire Screen" />
   </button>
   <div class="border-l border-gray-500 h-6"></div>
-  <button class="icon-button" id="stop-btn">
+  <!-- <button class="icon-button" id="stop-btn">
     <img src="icons/dashedRectangle.svg" alt="Frame Select" />
-  </button>
+  </button> -->
 
-  <div class="border-l border-gray-500 h-6"></div>
+  <!-- <div class="border-l border-gray-500 h-6"></div> -->
   <div class="export-container">
     <div class="border-l border-gray-500 h-6"></div>
     <div>
@@ -27,6 +27,9 @@
 
   <!-- <div>
     <video width="320" height="240" autoplay></video>
+  </div> -->
+  <!-- <div>
+    <canvas id="preview-canvas" style="border: 1px solid white; width: 800px; height: auto;"></canvas>
   </div> -->
 </div>
 
@@ -81,52 +84,80 @@
   }
   let mediaRecorder = null;
   let recordedChunks = [];
+  let captureInterval = null;
+  let imageCapture = null;
   if (recordButton) {
-    recordButton.addEventListener("click", () => {
+    recordButton.addEventListener("click", async () => {
       if (!windowSelectedStatus || !selectedStream) {
         showTooltip(recordButton, "Please select a capture area first.");
         return;
       }
 
-      recordedChunks = [];
+      // Set up ImageCapture from selected stream
+      const track = selectedStream.getVideoTracks()[0];
+      imageCapture = new ImageCapture(track);
 
-      mediaRecorder = new MediaRecorder(selectedStream, {
-        mimeType: "video/webm; codecs=vp9"
-      });
+      // If there's already a capture loop running, stop it first
+      if (captureInterval) {
+        clearInterval(captureInterval);
+      }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordedChunks.push(event.data);
+      // Start new capture loop (every 1 sec here — adjust as needed!)
+      captureInterval = setInterval(async () => {
+        try {
+          const bitmap = await imageCapture.grabFrame();
+
+          //const previewCanvas = document.getElementById("preview-canvas");
+          //previewCanvas.width = bitmap.width;
+          //previewCanvas.height = bitmap.height;
+          //const ctx = previewCanvas.getContext("2d");
+          //ctx.drawImage(bitmap, 0, 0);
+
+          // Also generate PNG blob (for OCR or saving)
+          //previewCanvas.toBlob((blob) => {
+          //console.log("Captured frame for OCR!", blob);
+
+          // OPTIONAL: if you want to also preview the blob as an <img>:
+          /*
+            const url = URL.createObjectURL(blob);
+            const img = document.createElement("img");
+            img.src = url;
+            document.body.appendChild(img);
+            */
+          //    }, "image/png");
+
+          // Draw to canvas
+          const canvas = document.createElement("canvas");
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(bitmap, 0, 0);
+
+          // Example: convert to PNG blob for OCR
+          console.log("i guess working??");
+          canvas.toBlob((blob) => {
+            // TODO: send blob to your OCR engine
+
+            console.log("Captured frame for OCR!", blob);
+          }, "image/png");
+        } catch (err) {
+          console.error("Error grabbing frame:", err);
         }
-      };
+      }, 1000); // every 1000 ms (1 second)
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "recording.webm";
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        }, 100);
-      };
-
-      mediaRecorder.start();
-      console.log("Recording started!");
+      console.log("OCR capture loop started!");
     });
   }
 
   const stopButton = document.getElementById("stop-btn");
 
   stopButton.addEventListener("click", () => {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
-      console.log("Recording stopped.");
+    if (captureInterval) {
+      clearInterval(captureInterval);
+      captureInterval = null;
+      console.log("OCR capture loop stopped.");
     } else {
-      console.log("No recording in progress.");
+      console.log("No OCR capture loop is running.");
     }
   });
 

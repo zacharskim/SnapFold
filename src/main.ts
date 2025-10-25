@@ -1,4 +1,14 @@
-import { app, Tray, Menu, BrowserWindow, nativeImage, ipcRenderer, ipcMain, screen, session } from "electron";
+import {
+  app,
+  Tray,
+  Menu,
+  BrowserWindow,
+  nativeImage,
+  ipcRenderer,
+  ipcMain,
+  screen,
+  session,
+} from "electron";
 import * as path from "path";
 
 const { desktopCapturer } = require("electron");
@@ -11,7 +21,10 @@ let windowSelected = false;
 const updateContextMenu = () => {
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: controlBar && controlBar.isVisible() ? "Hide Capture Bar" : "Open Capture Bar",
+      label:
+        controlBar && controlBar.isVisible()
+          ? "Hide Capture Bar"
+          : "Open Capture Bar",
       click: () => {
         if (!controlBar) {
           createControlBar();
@@ -19,9 +32,9 @@ const updateContextMenu = () => {
           controlBar.isVisible() ? controlBar.hide() : controlBar.show();
         }
         updateContextMenu(); // Update menu after action
-      }
+      },
     },
-    { label: "Quit", role: "quit" }
+    { label: "Quit", role: "quit" },
   ]);
 
   tray?.setContextMenu(contextMenu);
@@ -42,8 +55,8 @@ function createControlBar() {
     skipTaskbar: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
-    }
+      contextIsolation: false,
+    },
   });
 
   controlBar.webContents.openDevTools();
@@ -96,8 +109,8 @@ function createControlBar() {
       buttonLabel: "Save",
       filters: [
         { name: "Text Files", extensions: ["txt"] },
-        { name: "All Files", extensions: ["*"] }
-      ]
+        { name: "All Files", extensions: ["*"] },
+      ],
     });
 
     // Show the control bar again after the dialog is closed
@@ -106,7 +119,10 @@ function createControlBar() {
     }
 
     if (!result.canceled && result.filePath) {
-      fs.writeFileSync(result.filePath, "This is a randomly generated file content.");
+      fs.writeFileSync(
+        result.filePath,
+        "This is a randomly generated file content.",
+      );
     }
   });
 }
@@ -122,16 +138,18 @@ app.whenReady().then(() => {
 
   session.defaultSession.setDisplayMediaRequestHandler(
     (request, callback) => {
-      desktopCapturer.getSources({ types: ["screen"] }).then((sources: Electron.DesktopCapturerSource[]) => {
-        // Grant access to the first screen found.
-        callback({ video: sources[0], audio: "loopback" });
-      });
+      desktopCapturer
+        .getSources({ types: ["screen"] })
+        .then((sources: Electron.DesktopCapturerSource[]) => {
+          // Grant access to the first screen found.
+          callback({ video: sources[0], audio: "loopback" });
+        });
       // If true, use the system picker if available.
       // Note: this is currently experimental. If the system picker
       // is available, it will be used and the media request handler
       // will not be invoked.
     },
-    { useSystemPicker: true }
+    { useSystemPicker: true },
   );
 
   updateContextMenu();
@@ -153,8 +171,8 @@ ipcMain.on("toggle-selection", (event, selection) => {
       skipTaskbar: true,
       webPreferences: {
         nodeIntegration: true,
-        contextIsolation: false
-      }
+        contextIsolation: false,
+      },
     });
 
     // overlay.webContents.openDevTools();
@@ -174,7 +192,8 @@ ipcMain.on("toggle-selection", (event, selection) => {
     });
   } else {
     // Update windowSelected
-    windowSelected = selection === "show-overlay" || selection === "full-screen";
+    windowSelected =
+      selection === "show-overlay" || selection === "full-screen";
 
     // Send mode change to existing overlay
 

@@ -118,12 +118,31 @@
     updateRecordingUI();
   }
 
-  function stopRecording() {
+  async function stopRecording() {
     if (captureInterval) {
       clearInterval(captureInterval);
       captureInterval = null;
       console.log("OCR capture loop stopped.");
     }
+
+    // Save frames if any were captured
+    if (capturedBlobs.length > 0) {
+      try {
+        console.log(`Saving ${capturedBlobs.length} frames...`);
+        const result = await ipcRenderer.invoke("save-recording-frames", capturedBlobs);
+        if (result.success) {
+          console.log(`Successfully saved ${result.files.length} frames to: ${result.directory}`);
+          showTooltip(recordButton, `Saved ${result.files.length} frames to recordings folder`);
+        }
+      } catch (err) {
+        console.error("Error saving frames:", err);
+        showTooltip(recordButton, "Error saving frames. Check console.");
+      }
+
+      // Clear blobs array after saving
+      capturedBlobs = [];
+    }
+
     isRecording = false;
     updateRecordingUI();
   }

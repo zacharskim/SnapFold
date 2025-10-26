@@ -228,6 +228,33 @@ ipcMain.handle("get-window-selected", async () => {
   return windowSelected; // Return the current state of windowSelected
 });
 
+// Handle saving recorded frames
+ipcMain.handle("save-recording-frames", async (event, blobData: Array<{ data: string; mimeType: string }>) => {
+  const fs = require("fs");
+  const recordingsDir = path.join(__dirname, "..", "recordings");
+
+  // Create recordings directory if it doesn't exist
+  if (!fs.existsSync(recordingsDir)) {
+    fs.mkdirSync(recordingsDir, { recursive: true });
+  }
+
+  // Save each blob as a PNG file with sequential naming
+  const savedFiles: string[] = [];
+  for (let i = 0; i < blobData.length; i++) {
+    const fileName = `frame_${String(i).padStart(4, "0")}.png`;
+    const filePath = path.join(recordingsDir, fileName);
+
+    // Convert base64 to buffer
+    const base64Data = blobData[i].data.replace(/^data:image\/png;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+
+    fs.writeFileSync(filePath, buffer);
+    savedFiles.push(filePath);
+  }
+
+  return { success: true, directory: recordingsDir, files: savedFiles };
+});
+
 app.on("window-all-closed", () => {
   // do nothing, we want tray to keep app alive
 });

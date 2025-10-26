@@ -10,11 +10,7 @@
     <img src="icons/display.svg" alt="Entire Screen" />
   </button>
   <div class="border-l border-gray-500 h-6"></div>
-  <!-- <button class="icon-button" id="stop-btn">
-    <img src="icons/dashedRectangle.svg" alt="Frame Select" />
-  </button> -->
 
-  <!-- <div class="border-l border-gray-500 h-6"></div> -->
   <div class="export-container">
     <div class="border-l border-gray-500 h-6"></div>
     <div>
@@ -23,58 +19,40 @@
   </div>
 
   <div class="border-l border-gray-500 h-6"></div>
-  <div><button class="control-bar-btn" id="record-btn">Record</button></div>
-
-  <!-- <div>
-    <video width="320" height="240" autoplay></video>
-  </div> -->
-  <!-- <div>
-    <canvas id="preview-canvas" style="border: 1px solid white; width: 800px; height: auto;"></canvas>
-  </div> -->
+  <div style="display: flex; align-items: center;">
+    <button class="control-bar-btn" id="record-btn">Record</button>
+  </div>
 </div>
 
 <script>
-  // Add an event listener to the close button to emit the close-control-bar event
+  const {ipcRenderer} = require("electron");
+
+  // Close button
   const closeButton = document.getElementById("close-btn");
   if (closeButton) {
     closeButton.addEventListener("click", () => {
-      const { ipcRenderer } = require("electron");
       ipcRenderer.send("close-control-bar");
     });
   }
 
-  // Add an event listener to the Export To button to emit the export-to event
+  // Export button
   const exportButton = document.getElementById("export-btn");
   if (exportButton) {
     exportButton.addEventListener("click", () => {
-      const { ipcRenderer } = require("electron");
       ipcRenderer.send("export-to");
     });
   }
 
-  // Add an event listener to the Frame Select button to emit the show-overlay event
-  const frameSelectButton = document.getElementById("frame-select");
-  if (frameSelectButton) {
-    frameSelectButton.addEventListener("click", () => {
-      const { ipcRenderer } = require("electron");
-      ipcRenderer.send("toggle-selection", "show-overlay");
-    });
-  }
-  const recordButton = document.getElementById("record-btn");
-  const video = document.querySelector("video");
+  // Select Window button
   const selectWindow = document.getElementById("select-window");
+  const recordButton = document.getElementById("record-btn");
   let windowSelectedStatus = false;
   let selectedStream = null;
+
   if (selectWindow) {
-    //const { ipcRenderer } = require("electron");
-    //ipcRenderer.send("toggle-selection", "full-screen");
-    //well needs a major revamp based on new info that we can record 'through' an electron window despite being able to click through them
-
-    //we don't actually want a new browser window,,, but just to trigger the permissions to ask what window etc...
-
     selectWindow.addEventListener("click", async () => {
       try {
-        selectedStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        selectedStream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
         windowSelectedStatus = true;
         console.log("Window selected!");
       } catch (err) {
@@ -82,84 +60,110 @@
       }
     });
   }
-  let mediaRecorder = null;
-  let recordedChunks = [];
+
+  // Recording variables
   let captureInterval = null;
   let imageCapture = null;
-  if (recordButton) {
-    recordButton.addEventListener("click", async () => {
-      if (!windowSelectedStatus || !selectedStream) {
-        showTooltip(recordButton, "Please select a capture area first.");
-        return;
+  let capturedBlobs = [];
+  let isRecording = false;
+
+  function startRecording() {
+    if (!windowSelectedStatus || !selectedStream) {
+      showTooltip(recordButton, "Please select a capture area first.");
+      return;
+    }
+
+    // Set up ImageCapture from selected stream
+    const track = selectedStream.getVideoTracks()[0];
+    imageCapture = new ImageCapture(track);
+
+    // Clear any existing interval
+    if (captureInterval) {
+      clearInterval(captureInterval);
+    }
+
+    // Start capture loop
+    captureInterval = setInterval(async () => {
+      try {
+        const bitmap = await imageCapture.grabFrame();
+
+        // Draw to canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(bitmap, 0, 0);
+
+        // Convert to PNG blob
+        canvas.toBlob((blob) => {
+          console.log("Captured frame for OCR!", blob);
+
+          // Store blob as base64 for debug export
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            capturedBlobs.push({
+              data: reader.result,
+              mimeType: "image/png"
+            });
+          };
+          reader.readAsDataURL(blob);
+        }, "image/png");
+      } catch (err) {
+        console.error("Error grabbing frame:", err);
       }
+    }, 1000);
 
-      // Set up ImageCapture from selected stream
-      const track = selectedStream.getVideoTracks()[0];
-      imageCapture = new ImageCapture(track);
-
-      // If there's already a capture loop running, stop it first
-      if (captureInterval) {
-        clearInterval(captureInterval);
-      }
-
-      // Start new capture loop (every 1 sec here — adjust as needed!)
-      captureInterval = setInterval(async () => {
-        try {
-          const bitmap = await imageCapture.grabFrame();
-
-          //const previewCanvas = document.getElementById("preview-canvas");
-          //previewCanvas.width = bitmap.width;
-          //previewCanvas.height = bitmap.height;
-          //const ctx = previewCanvas.getContext("2d");
-          //ctx.drawImage(bitmap, 0, 0);
-
-          // Also generate PNG blob (for OCR or saving)
-          //previewCanvas.toBlob((blob) => {
-          //console.log("Captured frame for OCR!", blob);
-
-          // OPTIONAL: if you want to also preview the blob as an <img>:
-          /*
-            const url = URL.createObjectURL(blob);
-            const img = document.createElement("img");
-            img.src = url;
-            document.body.appendChild(img);
-            */
-          //    }, "image/png");
-
-          // Draw to canvas
-          const canvas = document.createElement("canvas");
-          canvas.width = bitmap.width;
-          canvas.height = bitmap.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(bitmap, 0, 0);
-
-          // Example: convert to PNG blob for OCR
-          console.log("i guess working??");
-          canvas.toBlob((blob) => {
-            // TODO: send blob to your OCR engine
-
-            console.log("Captured frame for OCR!", blob);
-          }, "image/png");
-        } catch (err) {
-          console.error("Error grabbing frame:", err);
-        }
-      }, 1000); // every 1000 ms (1 second)
-
-      console.log("OCR capture loop started!");
-    });
+    console.log("OCR capture loop started!");
+    isRecording = true;
+    updateRecordingUI();
   }
 
-  const stopButton = document.getElementById("stop-btn");
-
-  stopButton.addEventListener("click", () => {
+  function stopRecording() {
     if (captureInterval) {
       clearInterval(captureInterval);
       captureInterval = null;
       console.log("OCR capture loop stopped.");
-    } else {
-      console.log("No OCR capture loop is running.");
     }
-  });
+    isRecording = false;
+    updateRecordingUI();
+  }
+
+  function updateRecordingUI() {
+    if (isRecording) {
+      // Show stop state
+      recordButton.classList.remove("fade-out");
+      recordButton.textContent = "Stop";
+      recordButton.classList.add("recording");
+
+      // Disable select window button
+      selectWindow.disabled = true;
+      exportButton.disabled = true;
+    } else {
+      // Show record state with fade out animation
+      recordButton.classList.add("fade-out");
+
+      // Wait for animation to complete before changing text
+      setTimeout(() => {
+        recordButton.textContent = "Record";
+        recordButton.classList.remove("recording", "fade-out");
+      }, 150);
+
+      // Enable select window button
+      selectWindow.disabled = false;
+      exportButton.disabled = false;
+    }
+  }
+
+  // Record button toggle
+  if (recordButton) {
+    recordButton.addEventListener("click", () => {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    });
+  }
 
   function showTooltip(targetElement, message) {
     let tooltip = document.createElement("div");
@@ -171,8 +175,7 @@
     const controlBar = document.querySelector(".control-bar");
     const rect = controlBar.getBoundingClientRect();
 
-    // Centered horizontally, slightly above center vertically
-    tooltip.style.top = `${rect.top + rect.height / 2 - 55}px`; // adjust -10 to move up more if you want
+    tooltip.style.top = `${rect.top + rect.height / 2 - 55}px`;
     tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
     tooltip.style.opacity = "1";
 
@@ -184,7 +187,4 @@
     }, 2500);
   }
 
-  ipcRenderer.on("state-update", (event, state) => {
-    window.frameSelected = state.frameSelected;
-  });
 </script>

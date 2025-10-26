@@ -86,6 +86,8 @@ body {
   cursor: pointer;
   opacity: 0.8;
   -webkit-app-region: no-drag;
+  min-width: 50px;
+  text-align: center;
 }
 
 .control-bar-btn:hover {
@@ -121,4 +123,82 @@ body {
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
+}
+
+/* Recording indicator dot - reserved space */
+#record-btn::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+#record-btn.recording::before {
+  background: #FF6B45;
+  animation: pulse 1.5s infinite, fadeIn 0.3s ease-out;
+}
+
+/* Recording indicator dot */
+.recording-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FF6B45;
+  margin-right: 6px;
+  animation: pulse 1.5s infinite, fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 107, 69, 0.7);
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 8px rgba(255, 107, 69, 0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* Stop button styling */
+.control-bar-btn.recording {
+  color: #FF6B45;
+  font-weight: bold;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.control-bar-btn.recording.fade-out {
+  animation: fadeOut 0.3s ease-out;
+}
+
+.control-bar-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
 }

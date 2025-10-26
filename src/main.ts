@@ -8,6 +8,7 @@ import {
   ipcMain,
   screen,
   session,
+  nativeTheme,
 } from "electron";
 import * as path from "path";
 
@@ -128,9 +129,14 @@ function createControlBar() {
 }
 
 app.whenReady().then(() => {
+  // Detect if system is in dark mode
+  const isDarkMode = nativeTheme.shouldUseDarkColors;
+
+  // Select appropriate icon based on theme
+  const iconFileName = isDarkMode ? "tray-icon-dark.png" : "tray-icon.png";
   const iconPath = app.isPackaged
-    ? path.join(process.resourcesPath, "assets", "tray-icon.png") // Path for packaged app
-    : path.join(__dirname, "..", "assets", "tray-icon.png"); // Path for development mode
+    ? path.join(process.resourcesPath, "assets", iconFileName) // Path for packaged app
+    : path.join(__dirname, "..", "assets", iconFileName); // Path for development mode
 
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);

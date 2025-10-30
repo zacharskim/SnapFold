@@ -93,7 +93,7 @@ async def process_frame(request: OllamaRequest) -> OllamaResponse:
                 "images": [image_base64],
                 "stream": False,
             },
-            timeout=60,
+            timeout=90,
         )
 
         if ollama_response.status_code != 200:

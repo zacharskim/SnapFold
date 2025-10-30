@@ -21,11 +21,6 @@ pip install -r requirements.txt
 ollama serve
 ```
 
-3. **Pull a vision model (first time only):**
-```bash
-ollama pull llava
-```
-
 ### Running the Backend
 
 ```bash

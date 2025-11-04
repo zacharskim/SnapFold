@@ -1,0 +1,56 @@
+{
+  "hand_id": null,
+  "game_type": "Holdem",
+  "stakes": "$0.01/$0.02",
+  "timestamp": null,
+  "table_name": null,
+  "max_seats": null,
+  "button_see": null,
+  "players": [
+    {
+      "seat": 1,
+      "name": "AndrewZema",
+      "stack": "21.17 BB"
+    },
+    {
+      "seat": 2,
+      "name": "SOOSOO",
+      "stack": "140.47 BB"
+    },
+    {
+      "seat": 3,
+      "name": "MarketingGo...",
+      "stack": "13.90 BB"
+    },
+    {
+      "seat": 4,
+      "name": "Rainbow...",
+      "stack": "106.07 BB"
+    },
+    {
+      "seat": 5,
+      "name": "AndrewZema",
+      "stack": "21.17 BB"
+    },
+    {
+      "seat": 6,
+      "name": "SOOSOO",
+      "stack": "140.47 BB"
+    }
+  ],
+  "current_street": "Turn",
+  "board_cards": [
+    "4c",
+    "8d",
+    "6c"
+  ],
+  "hole_cards": [
+    "Tc",
+    "7c"
+  ],
+  "actions": null,
+  "showdown_info": null,
+  "winner": null,
+  "pots": null,
+  "raw_text": null
+}
